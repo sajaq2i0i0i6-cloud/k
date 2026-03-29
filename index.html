@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Security Awareness Game</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(135deg, #1e1e2f, #121212);
+      color: #fff;
+    }
+
+    .card {
+      margin: 80px auto;
+      padding: 30px;
+      width: 320px;
+      background: #222;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    button {
+      padding: 12px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .good { background: #2ecc71; }
+    .bad { background: #e74c3c; }
+
+    .score {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #000;
+      padding: 10px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="score">النقاط: <span id="score">0</span></div>
+
+<div class="card" id="game">
+  <h2>🎮 لعبة الوعي الأمني</h2>
+  <p>هل تستطيع تجنب الخداع؟</p>
+  <button onclick="stage1()">ابدأ</button>
+</div>
+
+<script>
+let score = 0;
+
+function updateScore() {
+  document.getElementById("score").innerText = score;
+}
+
+// المرحلة 1
+function stage1() {
+  document.getElementById("game").innerHTML = `
+    <h3>📍 المرحلة 1</h3>
+    <p>اضغط للمتابعة</p>
+    <button onclick="getLocation()">متابعة</button>
+  `;
+}
+
+function getLocation() {
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      next("❌ وافقت على إعطاء موقعك!", 0);
+    },
+    () => {
+      next("✔️ أحسنت! رفضت الإذن", 10);
+    }
+  );
+}
+
+// المرحلة 2
+function stage2() {
+  document.getElementById("game").innerHTML = `
+    <h3>🔗 المرحلة 2</h3>
+    <p>🎁 ربحت جائزة! اضغط لاستلامها</p>
+    <button class="bad" onclick="phish()">افتح</button>
+    <button class="good" onclick="safe()">تجاهل</button>
+  `;
+}
+
+function phish() {
+  window.open("https://example.com");
+  next("❌ هذا رابط تصيد!", 0);
+}
+
+function safe() {
+  next("✔️ تجاهلت الرابط المشبوه", 10);
+}
+
+// المرحلة 3
+function stage3() {
+  document.getElementById("game").innerHTML = `
+    <h3>🔔 المرحلة 3</h3>
+    <p>السماح بالإشعارات لتحسين تجربتك</p>
+    <button class="bad" onclick="allowNotif()">سماح</button>
+    <button class="good" onclick="denyNotif()">رفض</button>
+  `;
+}
+
+function allowNotif() {
+  Notification.requestPermission();
+  next("❌ أعطيت إذن بدون تفكير!", 0);
+}
+
+function denyNotif() {
+  next("✔️ قرار صحيح!", 10);
+}
+
+// التنقل
+function next(msg, points) {
+  score += points;
+  updateScore();
+
+  let nextStage = "";
+
+  if (score <= 10) nextStage = "stage2()";
+  else if (score <= 20) nextStage = "stage3()";
+  else nextStage = "end()";
+
+  document.getElementById("game").innerHTML = `
+    <p>${msg}</p>
+    <button onclick="${nextStage}">التالي</button>
+  `;
+}
+
+// النهاية
+function end() {
+  document.getElementById("game").innerHTML = `
+    <h2>🏁 النتيجة النهائية</h2>
+    <p>النقاط: ${score} / 30</p>
+    <p>${score >= 20 ? "🔥 ممتاز! واعي أمنيًا" : "⚠️ تحتاج تنتبه أكثر"}</p>
+  `;
+}
+</script>
+
+</body>
+</html>
